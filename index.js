@@ -1,5 +1,5 @@
 
-const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
@@ -36,12 +36,34 @@ async function run() {
         const chocolateCollection = database.collection("Chocolates");
 
 
-        app.get('/chocolates',async(req,res)=>{
+        app.get('/chocolates', async (req, res) => {
             const chocolate = chocolateCollection.find()
             const result = await chocolate.toArray()
             res.send(result)
         })
 
+
+        app.get('/chocolates/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const result = await chocolateCollection.findOne(filter)
+            res.send(result)
+        })
+
+        app.put('/updateChocolate/:id', async (req, res) => {
+            const id = req.params.id
+            const chocolate = req.body
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updatedChocolate = {
+                $set: {
+                    name: chocolate.name, country: chocolate.country, category: chocolate.category,
+                },
+            }
+            const result = await chocolateCollection.updateOne(filter, updatedChocolate, options)
+            console.log(result)
+            res.send(result)
+        })
 
         app.post('/chocolates', async (req, res) => {
             const chocolate = req.body
@@ -49,9 +71,9 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/delete/:id',async(req,res)=>{
-            const id = req.params.id 
-            const filter = {_id : new ObjectId(id)}
+        app.delete('/delete/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
             const result = await chocolateCollection.deleteOne(filter)
             res.send(result)
 
